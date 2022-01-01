@@ -57,9 +57,6 @@
 #region: Declare Variables (script-scope).
 #==============================================================
 
-# Set install target folder
-[string] $script:InstallTargetFolderPath = $Path
-
 # Get script name
 [string] $script:scriptName = $MyInvocation.MyCommand.Name
 
