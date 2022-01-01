@@ -25,24 +25,24 @@
 
     Creates a error log entry
 	
-	.INPUTS
-	None. This script does not support piped input.
+    .INPUTS
+    None. This script does not support piped input.
 
-	.OUTPUTS
-	None. This script does not return a value or an object.
+    .OUTPUTS
+    None. This script does not return a value or an object.
 
-	.NOTES
+    .NOTES
     CMTrace.exe can be downloaded from Microsoft Downloads using the link below:
-	https://www.microsoft.com/en-us/download/details.aspx?id=50012
+    https://www.microsoft.com/en-us/download/details.aspx?id=50012
 
-	.LINK
-	None
+    .LINK
+    None
 
-	.COMPONENT
+    .COMPONENT
     Deploy-DeviceMigrationScripts    
     
-	.FUNCTIONALITY
-	None
+    .FUNCTIONALITY
+    None
 #>
 
 [CmdletBinding()]
