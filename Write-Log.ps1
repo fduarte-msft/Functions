@@ -1,8 +1,8 @@
 <#
-	.SYNOPSIS
-	This fucntions are designed to create Microsoft Endpoing Configuration Manager style format logs.
+    .SYNOPSIS
+    This fucntions are designed to create Microsoft Endpoing Configuration Manager style format logs.
 
-	.DESCRIPTION
+    .DESCRIPTION
 
     Write-Log is a function that creates log events using Confiugraiton Manager stype formatting so it is best to 
     review the log using CMTrace.exe which can be obtained from Microsoft Downloads. The log file will be
