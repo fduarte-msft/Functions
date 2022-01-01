@@ -1,0 +1,210 @@
+function Write-Log {
+
+    [CmdletBinding()]
+
+    Param (
+        [Parameter(Mandatory)]
+        [string]
+        $Message,
+            
+        [Parameter(Mandatory)]
+        [string]
+        $Component,
+            
+        [Parameter(Mandatory)]
+        [ValidateSet('Info','Warning','Error')]
+        [string]
+        $Severity,
+                
+        [Parameter(Mandatory)]
+        [int32]
+        $Thread,
+                
+        [Parameter(Mandatory)]
+        [string]
+        $File,
+                    
+        [Parameter(Mandatory)]
+        [string]
+        $LogFile
+    )
+
+    process {
+        switch ($Severity) {
+            Info    { [int] $local:type = 1 ; continue }
+            Warning { [int] $local:type = 2 ; continue }
+            Error   { [int] $local:type = 3 ; continue }
+        }
+                
+        # Get time
+        $local:time = Get-Date -Format "HH:mm:ss.ffffff"
+                
+        # Get date
+        $local:date = Get-Date -Format "MM-dd-yyyy"
+                
+        # Build message
+        $local:logMessage = "<![LOG[$Message]LOG]!><time=`"$local:time`" date=`"$local:date`" component=`"$Component`" context=`"`" type=`"$local:type`" thread=`"$Thread`" file=`"$File`">"
+                
+        # Write to log
+        $local:logMessage | Out-File -Append -Encoding utf8 -FilePath $LogFile -Force
+    }
+}
+
+function Get-CurrentLine {
+    $MyInvocation.ScriptLineNumber
+}
+function Write-InfoMessage {
+    [CmdletBinding()]
+
+    Param (
+        [Parameter(Mandatory=$true)]
+        [string]
+        $Message,
+            
+        [Parameter(Mandatory=$true)]
+        [string]
+        $Component,
+
+        [Parameter(Mandatory=$false)]
+        [string]
+        $Severity = 'Info',
+
+        [Parameter(Mandatory=$true)]
+        [int32]
+        $Thread,
+
+        [Parameter(Mandatory=$true)]
+        [string]
+        $File
+    )
+
+    Process {
+        
+        # Create empty ordered array
+        $local:writeLog = @{}
+
+        # Create Write-Log splat
+        $local:writeLog = [ordered]@{
+            Message = $Message
+            Component = $Component
+            Severity = $Severity
+            Thread = $Thread
+            File = $File
+            LogFile = $script:logFile
+        }
+        
+        # Write the log messages
+        Write-Log @local:writeLog
+    }
+}
+
+function Write-WarmingMessage {
+    [CmdletBinding()]
+
+    Param (
+        [Parameter(Mandatory=$true)]
+        [string]
+        $Message,
+            
+        [Parameter(Mandatory=$true)]
+        [string]
+        $Component,
+
+        [Parameter(Mandatory=$false)]
+        [string]
+        $Severity = 'Warning',
+
+        [Parameter(Mandatory=$true)]
+        [int32]
+        $Thread,
+
+        [Parameter(Mandatory=$true)]
+        [string]
+        $File
+    )
+
+    Process {
+
+        # Create empty ordered array
+        $local:writeLog = @{}
+
+        $local:writeLog = [ordered]@{
+            Message = $Message
+            Component = $Component
+            Severity = $Severity
+            Thread = $Thread
+            File = $File
+            LogFile = $script:logFile
+        }
+        
+        # Write the log messages
+        Write-Log @local:writeLog
+    }
+}
+
+function Write-ErrorMessage {
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory=$true)]
+        [psobject]
+        $ErrorRecord,
+
+        [Parameter(Mandatory=$true)]
+        [string]
+        $Component,
+
+        [Parameter(Mandatory=$false)]
+        [string]
+        $Severity = 'Error',
+
+        [Parameter(Mandatory=$true)]
+        [string]
+        $Thread
+    )
+
+    Process {
+        # Set severity level
+            
+
+        # Format StackTrace
+        [string[]] $local:messages = @()
+        [string[]] $local:stackTraces = @()
+        $local:writeLog = [System.Collections.Specialized.OrderedDictionary]::new()
+
+        [string] $local:FileName = $($ErrorRecord.InvocationInfo.PSCommandPath | Split-Path -Leaf)
+        [string] $local:LineNumber = $($ErrorRecord.InvocationInfo.ScriptLineNumber)
+
+        [string] $local:file = "$($local:FileName):$($local:LineNumber)"
+
+        # Get StackTrace
+        $local:stackTraces = $ErrorRecord.ScriptStackTrace -split "`r?`n" | ForEach-Object {"++++ $_"}
+
+        # Build messages to log
+        $local:messages = @(
+            'Exception Detected:',"++++ Message: $ErrorRecord",
+            "++++ Line: $($ErrorRecord.InvocationInfo.ScriptLineNumber): $(($ErrorRecord.InvocationInfo.Line.ToString()).Trim())",
+            "++++ Exception: $($ErrorRecord.Exception.GetType())",
+            'Call Stack Trace:'
+        )
+
+        # Append StackTrace to messages
+        $local:messages = $local:messages + $local:stackTraces
+
+        # Log each message
+        foreach ($local:message in $local:messages) {
+                    
+            # Create a hash to splat Write-Log function
+            $local:writeLog = [ordered]@{
+                Message = $local:message
+                Component = $Component
+                Severity = $Severity
+                Thread = $Thread
+                File = $local:file
+                LogFile = $script:logFile
+            }
+
+            # Write the log messages
+            Write-Log @local:writeLog
+        }
+    }
+}
