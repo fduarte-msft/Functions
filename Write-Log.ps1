@@ -1,3 +1,76 @@
+<#
+	.SYNOPSIS
+	This fucntions are designed to create Microsoft Endpoing Configuration Manager style format logs.
+
+	.DESCRIPTION
+
+    Write-Log is a function that creates log events using Confiugraiton Manager stype formatting so it is best to 
+    review the log using CMTrace.exe which can be obtained from Microsoft Downloads. The log file will be
+    stored in the %TEMP% folder and will be called Deploy-DeviceMigrationScripts.log. it is typical for
+    client management solutions to execute scripts using the "NT AUTHORITY\System" account context as such
+    the log file path should be "%WINDIR%\Temp\Log_File_Name.log".
+
+    .EXAMPLE
+    Write-InfoMessage -Message "Information message" -Component $script:component -Thread $PID -File "$($script:scriptName):$(Get-CurrentLine)"
+
+    Creates a informational log entry
+
+    .EXAMPLE
+    Write-WarmingMessage -Message "Warning message" -Component $script:component -Thread $PID -File "$($script:scriptName):$(Get-CurrentLine)"
+
+    Creates a warning log entry
+
+    .EXAMPLE
+    Write-InfoMessage -Message -ErrorRecord $PSItem -Component $script:component -Thread $PID
+
+    Creates a error log entry
+	
+	.INPUTS
+	None. This script does not support piped input.
+
+	.OUTPUTS
+	None. This script does not return a value or an object.
+
+	.NOTES
+    CMTrace.exe can be downloaded from Microsoft Downloads using the link below:
+	https://www.microsoft.com/en-us/download/details.aspx?id=50012
+
+	.LINK
+	None
+
+	.COMPONENT
+    Deploy-DeviceMigrationScripts    
+    
+	.FUNCTIONALITY
+	None
+#>
+
+[CmdletBinding()]
+
+#==============================================================
+#region: Invoke Extension Scripts (dot-source)
+#==============================================================
+
+#endregion
+
+#==============================================================
+#region: Declare Variables (script-scope).
+#==============================================================
+
+# Set install target folder
+[string] $script:InstallTargetFolderPath = $Path
+
+# Get script name
+[string] $script:scriptName = $MyInvocation.MyCommand.Name
+
+# Get invocation name
+[string] $script:component = $script:scriptName.Substring(0,$script:scriptName.Length-4)
+
+# Build log file path
+[string] $script:logFile = "$env:TEMP\$script:component.log"
+
+#endregion
+
 function Write-Log {
 
     [CmdletBinding()]
@@ -49,7 +122,6 @@ function Write-Log {
         $local:logMessage | Out-File -Append -Encoding utf8 -FilePath $LogFile -Force
     }
 }
-
 function Get-CurrentLine {
     $MyInvocation.ScriptLineNumber
 }
@@ -97,7 +169,6 @@ function Write-InfoMessage {
         Write-Log @local:writeLog
     }
 }
-
 function Write-WarmingMessage {
     [CmdletBinding()]
 
@@ -141,7 +212,6 @@ function Write-WarmingMessage {
         Write-Log @local:writeLog
     }
 }
-
 function Write-ErrorMessage {
     [CmdletBinding()]
     Param(
